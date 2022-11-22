@@ -1,25 +1,45 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const express = require("express");
-const app = express();
-
-app.use(express.static("public"));
-app.get("/", function (request, response) {
-    response.sendStatus(200);
-});
-
-var listener = app.listen(process.env.PORT || 3000, function () {
-    console.log("Your app is listening on port " + listener.address().port);
-});
+const fs = require('fs');
+const path = require('path');
+const { clientId, guildId, token } = require('./config.json');
+const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', msg => {
-  if (msg.content === 'ping') {
-    msg.reply('Pong!');
-  }
+client.commands = new Collection();
+
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	// Set a new item in the Collection with the key as the command name and the value as the exported module
+	if ('data' in command && 'execute' in command) {
+		client.commands.set(command.data.name, command);
+	} else {
+		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	}
+}
+
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
+
+	const command = interaction.client.commands.get(interaction.commandName);
+
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
+	}
+
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
 });
 
-client.login('MTA0NDI2NzA4MjU3NDk5NTQ2Ng.Gd_IdE.-Bj0mBtus1fgDeZq8Sx5zdquNUiK0IJIAY1vUo');
+client.login(token);
