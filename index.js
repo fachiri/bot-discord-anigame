@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { clientId, guildId, token } = require('./config.json');
-const { Client, GatewayIntentBits, Collection, Events, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events, REST, Routes, EmbedBuilder } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.on('ready', () => {
@@ -25,7 +25,16 @@ for (const file of commandFiles) {
 }
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
+	// if (!interaction.isChatInputCommand()) return;
+
+	if (interaction.isButton() && interaction.customId === 'play') {
+		await interaction.update({ embeds: [new EmbedBuilder()
+			.setColor(0x0099FF)
+			.setTitle('Play')
+			.setDescription('Sabar guyss, fitur ini sementara dibekeng.')
+			.setTimestamp()
+			.setFooter({ text: 'anigame'})], components: [] });
+	}
 
 	const command = interaction.client.commands.get(interaction.commandName);
 
