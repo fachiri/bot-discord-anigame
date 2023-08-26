@@ -1,6 +1,7 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { clientId, guildId, token } = require('./config.json');
+const { TOKEN } = require('./config/const');
 const { Client, GatewayIntentBits, Collection, Events, REST, Routes, EmbedBuilder } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -51,4 +52,4 @@ client.on(Events.InteractionCreate, async interaction => {
 	}
 });
 
-client.login(token);
+client.login(TOKEN);
