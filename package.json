@@ -4,7 +4,8 @@
   "description": "Game sederhana dengan bot discord",
   "main": "index.js",
   "scripts": {
-    "start": "npx nodemon",
+    "start": "npx node",
+    "dev": "npx nodemon",
     "regis": "node regis.commands",
     "delete": "node delete.commands"
   },
